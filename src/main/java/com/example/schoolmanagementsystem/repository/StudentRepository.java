@@ -10,12 +10,17 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface StudentRepository extends JpaRepository<Students, Long> {
+public interface StudentRepository extends JpaRepository<Students, String> {
 
     Optional<Students> findStudentsByStudentClass(StudentClass studentClass);
 
     Optional<Students> findStudentsBySubject(Subject subject);
 
     Optional<Students> findStudentsByTerms(Terms terms);
+
+
+
+
+
 
 }
