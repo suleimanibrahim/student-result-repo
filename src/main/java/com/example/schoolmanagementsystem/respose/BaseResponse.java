@@ -1,15 +1,14 @@
 package com.example.schoolmanagementsystem.respose;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.http.HttpStatus;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class BaseResponse<T> {
-    private HttpStatus responseCode;
-    private String responseMessage;
-    private T responseContent;
+    private HttpStatus status;
+    private String message;
+    private T result;
 }

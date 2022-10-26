@@ -8,5 +8,7 @@ import javax.persistence.Entity;
 
 @Getter @Setter @RequiredArgsConstructor @Entity
 public class Teacher extends Person{
-    String officeAddress;
+
+    private String officeAddress;
+
 }

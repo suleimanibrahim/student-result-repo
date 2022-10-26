@@ -9,14 +9,16 @@ import com.example.schoolmanagementsystem.models.Students;
 import com.example.schoolmanagementsystem.repository.StudentRepository;
 import com.example.schoolmanagementsystem.respose.BaseResponse;
 import com.example.schoolmanagementsystem.service.TeacherService;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-@Service @RequiredArgsConstructor @Builder
+@Service @RequiredArgsConstructor @Primary
 public class TeacherServiceImpl implements TeacherService {
 
-    StudentRepository studentRepository;
+    private final StudentRepository studentRepository;
 
     @Override
     public BaseResponse<String> getStudentScore(Terms terms) {
@@ -30,12 +32,18 @@ public class TeacherServiceImpl implements TeacherService {
     if(studentExist){
         throw new StudentAlreadyExistException("Student with this email Already Exist");
     }
+        students.setFirstName(studentDto.getFirstName());
+        students.setLastName(studentDto.getLastName());
+        students.setEmail(studentDto.getEmail());
+        students.setPhoneNumber(studentDto.getPhoneNumber());
+        students.setAddress(studentDto.getAddress());
+        students.setDob(studentDto.getDob());
+        students.setScore(studentDto.getScore());
+        students.setResult(studentDto.getResult());
+        BeanUtils.copyProperties(studentDto, students);
+        studentRepository.save(students);
 
-
-
-
-
-        return null;
+        return new BaseResponse<>(HttpStatus.OK,"Student Added Successfully",null);
     }
 
     @Override
