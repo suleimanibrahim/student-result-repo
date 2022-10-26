@@ -4,9 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
-@RequiredArgsConstructor
+@Getter @Setter @RequiredArgsConstructor
 abstract class Person extends Base{
 
     String firstName;

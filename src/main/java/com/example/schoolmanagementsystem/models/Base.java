@@ -9,10 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.time.LocalDateTime;
-@Getter
-@Setter
-@RequiredArgsConstructor
-@Entity
+@Getter @Setter @RequiredArgsConstructor @Entity
 public class Base {
 
     @Id
