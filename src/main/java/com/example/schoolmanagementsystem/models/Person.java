@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @RequiredArgsConstructor
-abstract class Person {
+abstract class Person extends Base{
 
     String firstName;
     String lastName;
