@@ -1,5 +1,7 @@
 package com.example.schoolmanagementsystem.models;
 
+import com.example.schoolmanagementsystem.enums.StudentClass;
+import com.example.schoolmanagementsystem.enums.Subject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -13,4 +15,8 @@ import javax.persistence.Entity;
 public class Students extends Person{
 
     String score;
+    StudentClass studentClass;
+    Subject subject;
+    String result;
+
 }
