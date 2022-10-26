@@ -10,4 +10,11 @@ import lombok.Setter;
 public class StudentDto {
     String result;
     String score;
+    String firstName;
+    String lastName;
+    String email;
+    String phoneNumber;
+    String dob;
+    String address;
+
 }
