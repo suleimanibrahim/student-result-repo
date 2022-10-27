@@ -9,15 +9,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.OneToMany;
+import java.util.List;
 
 @Getter @Setter @Entity @AllArgsConstructor @NoArgsConstructor
 public class Students extends Person{
 
 
 
-    private StudentClass studentClass;
+    private String studentClass;
 
-    private Terms terms;
+
+    @OneToMany(targetEntity = StudentSubjects.class, mappedBy = "id")
+    private List<StudentSubjects> studentSubjectsList;
 
 
 

@@ -16,5 +16,6 @@ public class StudentDto {
     String phoneNumber;
     String dob;
     String address;
+    String studentClass;
 
 }

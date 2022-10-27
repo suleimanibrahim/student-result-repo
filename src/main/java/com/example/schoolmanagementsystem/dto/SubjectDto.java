@@ -1,30 +1,19 @@
-package com.example.schoolmanagementsystem.models;
+package com.example.schoolmanagementsystem.dto;
 
-import com.example.schoolmanagementsystem.enums.StudentClass;
-import com.example.schoolmanagementsystem.enums.Terms;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-public class StudentSubjects extends Base{
-
+public class SubjectDto {
 
     private String studentName;
 
     private String studentClass;
-
-    private String studentResult;
-
-    @Enumerated(EnumType.STRING)
-    private Terms terms;
 
     private Integer mathematics;
 
@@ -53,14 +42,4 @@ public class StudentSubjects extends Base{
     private Integer generalScience;
 
     private Integer accounting;
-
-    private Integer totalScore;
-
-    private Double averageScore;
-
-    @ManyToOne
-    @JoinColumn(name = "students_id", referencedColumnName = "id")
-    Students students;
-
-
 }
