@@ -1,13 +1,11 @@
 package com.example.schoolmanagementsystem.models;
 
-import com.example.schoolmanagementsystem.enums.StudentClass;
-import com.example.schoolmanagementsystem.enums.Terms;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
 
 @Getter
 @Setter
@@ -23,8 +21,7 @@ public class StudentSubjects extends Base{
 
     private String studentResult;
 
-    @Enumerated(EnumType.STRING)
-    private Terms terms;
+    private String term;
 
     private Integer mathematics;
 
@@ -58,9 +55,7 @@ public class StudentSubjects extends Base{
 
     private Double averageScore;
 
-    @ManyToOne
-    @JoinColumn(name = "students_id", referencedColumnName = "id")
-    Students students;
+
 
 
 }

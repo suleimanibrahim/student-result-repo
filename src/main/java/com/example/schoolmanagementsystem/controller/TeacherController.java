@@ -3,13 +3,13 @@ package com.example.schoolmanagementsystem.controller;
 import com.example.schoolmanagementsystem.dto.StudentDto;
 import com.example.schoolmanagementsystem.dto.SubjectDto;
 import com.example.schoolmanagementsystem.exception.*;
+import com.example.schoolmanagementsystem.models.StudentSubjects;
 import com.example.schoolmanagementsystem.respose.BaseResponse;
 import com.example.schoolmanagementsystem.service.serviceImpl.TeacherServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,4 +43,21 @@ public class TeacherController {
     BaseResponse<String> calculateResult(@RequestBody SubjectDto subjectDto) throws StudentNotFoundException, ResultAlreadyComputedException, IllegalAccessException {
         return teacherService.calculateResult(subjectDto);
     }
+
+    @GetMapping("/getStudentScore")
+    BaseResponse<String> getStudentResult(@RequestBody SubjectDto subjectDto) throws StudentNotFoundException {
+        return teacherService.getStudentResult(subjectDto);
+    }
+    @GetMapping("/getAllStudentScore")
+    List<?> getAllStudentScore(@RequestBody SubjectDto subjectDto) throws StudentNotFoundException {
+        return teacherService.getStudentScore(subjectDto);
+    }
+
+    @GetMapping("/getStudentResultBaseOnTerm")
+    List<StudentSubjects> getStudentResultBaseOnTermAndClass(@RequestBody SubjectDto subjectDto) throws StudentNotFoundException {
+        return teacherService.getStudentResultBaseOnTermAndClass(subjectDto);
+    }
+
+
+
 }

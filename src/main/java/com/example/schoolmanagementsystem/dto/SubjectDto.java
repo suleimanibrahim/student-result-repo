@@ -1,5 +1,7 @@
 package com.example.schoolmanagementsystem.dto;
 
+import com.example.schoolmanagementsystem.enums.StudentClass;
+import com.example.schoolmanagementsystem.enums.Terms;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +14,10 @@ import lombok.Setter;
 public class SubjectDto {
 
     private String studentName;
+
+    private String subjectName;
+
+    private String terms;
 
     private String studentClass;
 

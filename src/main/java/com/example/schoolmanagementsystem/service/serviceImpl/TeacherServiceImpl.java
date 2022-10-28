@@ -3,9 +3,10 @@ package com.example.schoolmanagementsystem.service.serviceImpl;
 import com.example.schoolmanagementsystem.dto.StudentDto;
 import com.example.schoolmanagementsystem.dto.SubjectDto;
 import com.example.schoolmanagementsystem.enums.StudentResult;
-import com.example.schoolmanagementsystem.enums.Subject;
-import com.example.schoolmanagementsystem.enums.Terms;
-import com.example.schoolmanagementsystem.exception.*;
+import com.example.schoolmanagementsystem.exception.ResultAlreadyComputedException;
+import com.example.schoolmanagementsystem.exception.StudentAlreadyExistException;
+import com.example.schoolmanagementsystem.exception.StudentNotFoundException;
+import com.example.schoolmanagementsystem.exception.SubjectNotBelongToClassException;
 import com.example.schoolmanagementsystem.models.StudentSubjects;
 import com.example.schoolmanagementsystem.models.Students;
 import com.example.schoolmanagementsystem.repository.StudentRepository;
@@ -13,11 +14,15 @@ import com.example.schoolmanagementsystem.repository.StudentSubjectRepository;
 import com.example.schoolmanagementsystem.respose.BaseResponse;
 import com.example.schoolmanagementsystem.service.TeacherService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-@Service @RequiredArgsConstructor
+import java.util.ArrayList;
+import java.util.List;
+
+@Service @RequiredArgsConstructor  @Slf4j
 public class TeacherServiceImpl implements TeacherService {
 
     private final StudentRepository studentRepository;
@@ -50,7 +55,7 @@ public class TeacherServiceImpl implements TeacherService {
     public BaseResponse<String> calculateScore(SubjectDto subjectDto) throws StudentNotFoundException {
 
     StudentSubjects studentSubjects =
-            subjectRepository.findStudentSubjectsByStudentName(subjectDto.getStudentName()).
+            subjectRepository.findStudentSubjectsByStudentNameAndTerm(subjectDto.getStudentName(), subjectDto.getTerms()).
                     orElseThrow(()-> new StudentNotFoundException("Student with this name not found"));
 
     if(studentSubjects != null && studentSubjects.getStudentClass().equals("CLASS_A1")){
@@ -97,10 +102,10 @@ public class TeacherServiceImpl implements TeacherService {
     @Override
     public BaseResponse<String> calculateResult(SubjectDto subjectDto) throws StudentNotFoundException, ResultAlreadyComputedException, IllegalAccessException {
         StudentSubjects studentSubjects =
-                subjectRepository.findStudentSubjectsByStudentName(subjectDto.getStudentName()).
+                subjectRepository.findStudentSubjectsByStudentNameAndTerm(subjectDto.getStudentName(), subjectDto.getTerms()).
                         orElseThrow(()-> new StudentNotFoundException("Student with this name not found"));
 
-        StudentSubjects averageScore = subjectRepository.findStudentSubjectsByAverageScore(studentSubjects.getAverageScore()).
+        StudentSubjects averageScore = subjectRepository.findStudentSubjectsByAverageScoreAndTerm(studentSubjects.getAverageScore(), subjectDto.getTerms()).
                 orElseThrow(()-> new NullPointerException("The value is Null"));
 
         if(studentSubjects.getStudentResult() != null){
@@ -138,10 +143,10 @@ public class TeacherServiceImpl implements TeacherService {
     @Override
     public BaseResponse<String> calculateAverageScore(SubjectDto subjectDto) throws StudentNotFoundException {
         StudentSubjects studentSubjects =
-                subjectRepository.findStudentSubjectsByStudentName(subjectDto.getStudentName()).
+                subjectRepository.findStudentSubjectsByStudentNameAndTerm(subjectDto.getStudentName(), subjectDto.getTerms()).
                         orElseThrow(()-> new StudentNotFoundException("Student with this name not found"));
 
-       StudentSubjects totalScore = subjectRepository.findStudentSubjectsByTotalScore(studentSubjects.getTotalScore()).
+       StudentSubjects totalScore = subjectRepository.findStudentSubjectsByTotalScoreAndTerm(studentSubjects.getTotalScore(), subjectDto.getTerms()).
                orElseThrow(()-> new NullPointerException("The value is Null"));
 
       if(totalScore != null && studentSubjects.getStudentClass().equals("CLASS_A1")){
@@ -168,11 +173,11 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
-    public BaseResponse<String> computeStudentResult(SubjectDto subjectDto) throws StudentAlreadyExistException, StudentNotFoundException, IllegalAccessException, StudentClassNotFoundException, SubjectNotBelongToClassException {
-        boolean studentExist = subjectRepository.findStudentSubjectsByStudentName(subjectDto.getStudentName()).isPresent();
+    public BaseResponse<String> computeStudentResult(SubjectDto subjectDto) throws StudentAlreadyExistException, SubjectNotBelongToClassException {
+        boolean studentExist = subjectRepository.findStudentSubjectsByStudentNameAndTerm(subjectDto.getStudentName(), subjectDto.getTerms()).isPresent();
 
         if(studentExist){
-            throw new StudentAlreadyExistException("Student Name Already Exist");
+            throw new StudentAlreadyExistException("Student Record In this Term Already Exist Change Term");
         }
         StudentSubjects studentSubjects = new StudentSubjects();
 
@@ -186,7 +191,7 @@ public class TeacherServiceImpl implements TeacherService {
                 studentSubjects.setWriting(subjectDto.getWriting());
                 studentSubjects.setGeneralScience(subjectDto.getGeneralScience());
                 studentSubjects.setStudentClass(subjectDto.getStudentClass());
-                studentSubjects.setTerms(Terms.FIRST_TERM);
+                studentSubjects.setTerm(subjectDto.getTerms());
                 subjectRepository.save(studentSubjects);
             }else {
                 throw new SubjectNotBelongToClassException("This Subject Does Not Belong to CLASS_A1");
@@ -198,14 +203,14 @@ public class TeacherServiceImpl implements TeacherService {
         else if(subjectDto.getStudentClass().equals("CLASS_A2")){
             if(subjectDto.getMathematics() != null && subjectDto.getEnglish()
                     != null && subjectDto.getEconomics() != null
-                    && subjectDto.getArt() !=null) {
+                    && subjectDto.getArt() != null) {
                 studentSubjects.setArt(subjectDto.getArt());
                 studentSubjects.setStudentName(subjectDto.getStudentName());
                 studentSubjects.setEconomics(subjectDto.getEconomics());
                 studentSubjects.setEnglish(subjectDto.getEnglish());
                 studentSubjects.setMathematics(subjectDto.getMathematics());
                 studentSubjects.setStudentClass(subjectDto.getStudentClass());
-                studentSubjects.setTerms(Terms.FIRST_TERM);
+                studentSubjects.setTerm(subjectDto.getTerms());
                 subjectRepository.save(studentSubjects);
             }else {
                 throw new SubjectNotBelongToClassException("This Subject Does Not Belong to CLASS_A2");
@@ -228,7 +233,7 @@ public class TeacherServiceImpl implements TeacherService {
                 studentSubjects.setChemistry(subjectDto.getChemistry());
                 studentSubjects.setGeography(subjectDto.getGeography());
                 studentSubjects.setStudentClass(subjectDto.getStudentClass());
-                studentSubjects.setTerms(Terms.FIRST_TERM);
+                studentSubjects.setTerm(subjectDto.getTerms());
                 subjectRepository.save(studentSubjects);
             }else {
                 throw new SubjectNotBelongToClassException("This Subject Does Not Belong to CLASS_B1");
@@ -249,7 +254,7 @@ public class TeacherServiceImpl implements TeacherService {
                 studentSubjects.setPainting(subjectDto.getPainting());
                 studentSubjects.setAccounting(subjectDto.getAccounting());
                 studentSubjects.setStudentClass(subjectDto.getStudentClass());
-                studentSubjects.setTerms(Terms.FIRST_TERM);
+                studentSubjects.setTerm(subjectDto.getTerms());
                 subjectRepository.save(studentSubjects);
 
             }else {
@@ -263,17 +268,141 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
-    public BaseResponse<Double> getAverageScore(StudentDto studentDto) {
-        return null;
-    }
-    @Override
-    public BaseResponse<String> getStudentScore(SubjectDto subjectDto) {
+    public BaseResponse<String> getStudentResult(SubjectDto subjectDto) throws StudentNotFoundException {
+//        retrieve the result of any student for a specific subject, class and term //
+        StudentSubjects studentSubjects =
+                subjectRepository.findStudentSubjectsByStudentNameAndTerm(subjectDto.getStudentName(), subjectDto.getTerms()).
+                        orElseThrow(()-> new StudentNotFoundException("Student with this name not found"));
 
+        //Retrieve Student Result of Student in CLASS_A1//
+        if(studentSubjects != null && subjectDto.getSubjectName().equals("mathematics") &&
+                studentSubjects.getStudentClass().equals("CLASS_A1")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getMathematics()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("english") &&
+                studentSubjects.getStudentClass().equals("CLASS_A1")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getEnglish()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("writing") &&
+                studentSubjects.getStudentClass().equals("CLASS_A1")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getWriting()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("generalScience") &&
+                studentSubjects.getStudentClass().equals("CLASS_A1")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getGeneralScience()));
+        }
+
+        //Retrieve Student Result of Student in CLASS_A2//
+        if(studentSubjects != null && subjectDto.getSubjectName().equals("mathematics") &&
+                studentSubjects.getStudentClass().equals("CLASS_A2")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getMathematics()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("english") &&
+                studentSubjects.getStudentClass().equals("CLASS_A2")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getEnglish()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("economics") &&
+                studentSubjects.getStudentClass().equals("CLASS_A2")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getEconomics()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("art") &&
+                studentSubjects.getStudentClass().equals("CLASS_A2")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getArt()));
+        }
+
+
+         //Retrieved Result for a specific Student in CLASS_B1//
+
+        if(studentSubjects != null && subjectDto.getSubjectName().equals("mathematics") &&
+                studentSubjects.getStudentClass().equals("CLASS_B1")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getMathematics()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("english") &&
+                studentSubjects.getStudentClass().equals("CLASS_B1")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getEnglish()));
+        }
+
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("biology") &&
+                studentSubjects.getStudentClass().equals("CLASS_B1")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getBiology()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("physics") &&
+                studentSubjects.getStudentClass().equals("CLASS_B1")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getPhysics()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("chemistry") &&
+                studentSubjects.getStudentClass().equals("CLASS_B1")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getChemistry()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("geography") &&
+                studentSubjects.getStudentClass().equals("CLASS_B1")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getGeography()));
+        }
+
+
+        //Retrieved Result for a specific Student in CLASS_B2//
+
+        if(studentSubjects != null && subjectDto.getSubjectName().equals("mathematics") &&
+                studentSubjects.getStudentClass().equals("CLASS_B2")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getMathematics()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("english") &&
+                studentSubjects.getStudentClass().equals("CLASS_B2")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getEnglish()));
+        }
+
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("painting") &&
+                studentSubjects.getStudentClass().equals("CLASS_B2")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getPainting()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("drawing") &&
+                studentSubjects.getStudentClass().equals("CLASS_B2")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getDrawing()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("music") &&
+                studentSubjects.getStudentClass().equals("CLASS_B2")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getMusic()));
+        }
+        else if(studentSubjects != null && subjectDto.getSubjectName().equals("accounting") &&
+                studentSubjects.getStudentClass().equals("CLASS_B2")){
+            return new BaseResponse<>(HttpStatus.OK,"Result Retrieve Successfully", String.valueOf(studentSubjects.getAccounting()));
+        }
         return null;
     }
+
     @Override
-    public BaseResponse<String> getStudentScore(Terms terms) {
-        return null;
+    public List<StudentSubjects> getStudentResultBaseOnTermAndClass(SubjectDto subjectDto) throws StudentNotFoundException {
+        List<StudentSubjects> result = new ArrayList<>();
+        //get Result Base On Class and Term//
+        StudentSubjects studentSubjects =
+                subjectRepository.findStudentSubjectsByStudentNameAndTerm(subjectDto.getStudentName(), subjectDto.getTerms()).
+                        orElseThrow(()-> new StudentNotFoundException("Student with this name not found"));
+
+
+
+        if(studentSubjects != null && studentSubjects.getStudentName().equals(subjectDto.getStudentName())){
+            log.info(studentSubjects.getStudentName());
+            result = subjectRepository.
+                    findAllByStudentNameAndTermAndStudentClass(subjectDto.getStudentName(), subjectDto.getTerms(), subjectDto.getStudentClass());
+        }
+
+        return result;
     }
+
+    @Override
+    public List<?> getStudentScore(SubjectDto subjectDto) throws StudentNotFoundException {
+
+        StudentSubjects studentSubjects =
+                subjectRepository.findStudentSubjectsByStudentNameAndTerm(subjectDto.getStudentName(), subjectDto.getTerms()).
+                        orElseThrow(()-> new StudentNotFoundException("Student with this name not found"));
+
+        List<StudentSubjects> result = new ArrayList<>();
+        if((studentSubjects != null) && (studentSubjects.getTerm().equals(subjectDto.getTerms()))){
+            result = subjectRepository.findAll();
+        }
+        return result;
+    }
+
+
 
 }
